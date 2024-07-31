@@ -2,4 +2,5 @@
 target/
 src/main/java/recipes/
 src/main/resources/recipe_schema
+src/main/resources/recipe_data
 ARobbinsWeek08CodingAssignment.drawio
