@@ -14,11 +14,14 @@ import projects.service.ProjectService;
 public class ProjectsApp {
 
 	private ProjectService projectService = new ProjectService();
-
+	private Project curProject;
+	
 	// Display a list of options.
 	// @formatter:off
-	private List<String> operations = List.of(""
-			+ "1) Add a project"
+	private List<String> operations = List.of(
+			"1) Add a project",
+			"2) List projects",
+			"3) Select a project"
 			);
 	// @formatter:on
 
@@ -48,6 +51,12 @@ public class ProjectsApp {
 				case (1):
 					createProject();
 					break;
+				case (2):
+					listProjects();
+					break;
+				case (3):
+					selectProject();
+					break;
 				default:
 					System.out.println("\n" + selection + " is not a valid selection. Try again.");
 					break;
@@ -59,10 +68,45 @@ public class ProjectsApp {
 		}
 	}
 
+	private void selectProject() {
+		// list the available projects
+		listProjects();
+
+		// collect a projectId from the user
+		Integer projectId = getIntInput("Enter a project ID to select a project");
+
+		// un-select any currently selected project
+		curProject = null;
+
+		/*
+		 * Call a new method, fetchProjectById() on the projectService object. The
+		 * method should take a single parameter, the project ID input by the user. It
+		 * should return a Project object. Assign the returned Project object to the
+		 * instance variable curProject. Note that if an invalid project ID is entered,
+		 * projectService.fetchProjectById() will throw a NoSuchElementException, which
+		 * is handled by the catch block in processUserSelections().
+		 */
+		curProject = projectService.fetchProjectById(projectId);
+		
+		if (Objects.isNull(curProject)) {
+			System.out.println("\nInvalid project ID selected.");
+		}
+		
+	}
+
+	private void listProjects() {
+		List<Project> projects = projectService.fetchAllProjects();
+		System.out.println("\nProjects:");
+
+		// for each project, print the ID and name of each project in projects
+		projects.forEach(
+				project -> System.out.println("   " + project.getProjectId() + ": " + project.getProjectName()));
+	}
+
 	private void createProject() {
-		String projectName = getStringInput("Enter the project name: ");
-		BigDecimal estimatedHours = getDecimalInput("Enter the estimated hours: ");
-		BigDecimal actualHours = getDecimalInput("Enter the actual hours: ");
+		String projectName = getStringInput("Enter the project name");
+		BigDecimal estimatedHours = getDecimalInput("Enter the estimated hours");
+		BigDecimal actualHours = getDecimalInput("Enter the actual hours");
 
 		Integer difficulty = getIntInput("Enter the project difficulty (1-5)");
 
@@ -79,7 +123,7 @@ public class ProjectsApp {
 
 		}
 
-		String notes = getStringInput("Enter the project notes:");
+		String notes = getStringInput("Enter the project notes");
 
 		Project project = new Project();
 
@@ -90,7 +134,7 @@ public class ProjectsApp {
 		project.setNotes(notes);
 
 		Project dbProject = projectService.addProject(project);
-		System.out.println("You have successfully created project: " + dbProject);
+		System.out.println("You have successfully created a project: " + dbProject);
 	}
 
 	private BigDecimal getDecimalInput(String prompt) {
@@ -158,6 +202,12 @@ public class ProjectsApp {
 	private void printOperations() {
 		System.out.println("\nBelow are the available options. Press the Enter key to quit:");
 		operations.forEach(line -> System.out.println("   " + line));
+		
+		if (Objects.isNull(curProject)) {
+			System.out.println("\nYou are not working with a project.");
+		} else {
+			System.out.println("\nYou are working with project: " + curProject);
+		}
 	}
 
 }
