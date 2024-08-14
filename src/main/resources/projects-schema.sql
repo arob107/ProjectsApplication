@@ -46,3 +46,15 @@ FOREIGN KEY (project_id) REFERENCES project (project_id),
 FOREIGN KEY (category_id) REFERENCES category (category_id),
 UNIQUE KEY (project_id, category_id)
 );
+
+-- add some data
+
+INSERT INTO project (project_name, estimated_hours, actual_hours, difficulty, notes) VALUES (Entry Way Storage, 16, 18, 3, buy straight boards);
+INSERT INTO material (project_id, material_name, num_required, cost) VALUES (5, 'trim', 8, 5.60);
+INSERT INTO material (project_id, material_name, num_required, cost) VALUES (5, 'butcher block', 1, 350);
+INSERT INTO step (project_id, step_text, step_order) VALUES (5, 'secure trim to wall', 1);
+INSERT INTO step (project_id, step_text, step_order) VALUES (5, 'set butcher block on frame', 2);
+INSERT INTO category (category_id, category_name) VALUES (2, 'DIY');
+INSERT INTO category (category_id, category_name) VALUES (3, 'Custom Design');
+INSERT INTO project_category (project_id, category_id) VALUES (5, 2);
+INSERT INTO project_category (project_id, category_id) VALUES (5, 3);

@@ -15,13 +15,15 @@ public class ProjectsApp {
 
 	private ProjectService projectService = new ProjectService();
 	private Project curProject;
-	
+
 	// Display a list of options.
 	// @formatter:off
 	private List<String> operations = List.of(
 			"1) Add a project",
 			"2) List projects",
-			"3) Select a project"
+			"3) Select a project",
+			"4) Update project details",
+			"5) Delete a project"
 			);
 	// @formatter:on
 
@@ -45,27 +47,95 @@ public class ProjectsApp {
 				int selection = getUserSelection();
 
 				switch (selection) {
-				case (-1):
+				case -1:
 					done = exitMenu();
 					break;
-				case (1):
+				case 1:
 					createProject();
 					break;
-				case (2):
+				case 2:
 					listProjects();
 					break;
-				case (3):
+				case 3:
 					selectProject();
+					break;
+				case 4:
+					updateProjectDetails();
+					break;
+				case 5:
+					deleteProject();
 					break;
 				default:
 					System.out.println("\n" + selection + " is not a valid selection. Try again.");
 					break;
 				}
 			} catch (Exception e) {
-				System.out.println("\nError: " + e + "Try again.");
+				System.out.println("\nError: " + e + ". Try again.");
 			}
 
 		}
+	}
+
+	private void deleteProject() {
+		// list available projects
+		listProjects();
+		// ask the user to select a project
+		Integer projectId = getIntInput("Enter a project ID to select a project");
+
+		if (Objects.nonNull(projectId)) {
+			projectService.deleteProject(projectId);
+
+			System.out.println("You have deleted project " + projectId);
+
+			// check to see if the project ID in the current project is the same as the ID
+			// entered by the user. If so, set curProject to null
+			if (Objects.nonNull(curProject) && curProject.getProjectId().equals(projectId)) {
+				curProject = null;
+			}
+		}
+	}
+
+	private void updateProjectDetails() {
+		// check to see if curProject is null
+		if (Objects.isNull(curProject)) {
+			System.out.println("\nPlease select a project.");
+			return;
+		}
+
+		// print a message along with the current setting in curProject for each field
+		// in the Project object
+		String projectName = getStringInput("Enter the project name [" + curProject.getProjectName() + "]");
+		BigDecimal estimatedHours = getDecimalInput(
+				"Enter the estimated hours [" + curProject.getEstimatedHours() + "]");
+		BigDecimal actualHours = getDecimalInput("Enter the actual hours [" + curProject.getActualHours() + "]");
+		Integer difficulty = getIntInput("Enter the project\'s difficulty [" + curProject.getDifficulty() + "]");
+		String notes = getStringInput("Enter notes for the project [" + curProject.getNotes() + "]");
+
+		/*
+		 * Create a new Project object. If the user input is not null, add the value to
+		 * the Project object. If the value is null, add the value from the curProject.
+		 * Repeat for all fields.
+		 */
+		Project project = new Project();
+		project.setProjectName(Objects.isNull(projectName) ? curProject.getProjectName() : projectName);
+		project.setEstimatedHours(Objects.isNull(estimatedHours) ? curProject.getEstimatedHours() : estimatedHours);
+		project.setActualHours(Objects.isNull(actualHours) ? curProject.getActualHours() : actualHours);
+		project.setDifficulty(Objects.isNull(difficulty) ? curProject.getDifficulty() : difficulty);
+		project.setNotes(Objects.isNull(notes) ? curProject.getNotes() : notes);
+
+		// set the project ID field in the Project object to the value in the curProject
+		// object
+		project.setProjectId(curProject.getProjectId());
+
+		/*
+		 * Call the projectService.modifyProjectDetails() and pass the Project object as
+		 * a parameter Reread the current project to pick up the changes by calling
+		 * projectService.fetchProjectById(). Pass the project ID obtained from
+		 * curProject.
+		 */
+		projectService.modifyProjectDetails(project);
+		curProject = projectService.fetchProjectById(curProject.getProjectId());
+
 	}
 
 	private void selectProject() {
@@ -87,11 +157,11 @@ public class ProjectsApp {
 		 * is handled by the catch block in processUserSelections().
 		 */
 		curProject = projectService.fetchProjectById(projectId);
-		
+
 		if (Objects.isNull(curProject)) {
 			System.out.println("\nInvalid project ID selected.");
 		}
-		
+
 	}
 
 	private void listProjects() {
@@ -202,7 +272,7 @@ public class ProjectsApp {
 	private void printOperations() {
 		System.out.println("\nBelow are the available options. Press the Enter key to quit:");
 		operations.forEach(line -> System.out.println("   " + line));
-		
+
 		if (Objects.isNull(curProject)) {
 			System.out.println("\nYou are not working with a project.");
 		} else {
